@@ -1,0 +1,82 @@
+input,
+select {
+  outline: none;
+}
+
+.form {
+  gap: 20px;
+  padding: 50px;
+  margin: 50px auto;
+  background-color: #fff;
+  border-radius: 10px;
+  @include flexbox(normal, normal, column, wrap);
+  @extend %base-shadow;
+  max-width: 700px;
+
+  &__group {
+    @include flexbox(space-between, center, row, wrap);
+    gap: 20px;
+  }
+
+  &_item {
+    border: none;
+    border-bottom: 0.125rem solid var(--base-color);
+    height: 2rem;
+    font-size: 1rem;
+    padding-left: 0.875rem;
+    line-height: 147.6%;
+
+    &_error {
+      border-color: var(--red-color);
+    }
+
+    &-helper {
+      width: 100%;
+      font-size: 12px;
+      color: var(--red-color);
+    }
+  }
+
+  &__submit-button {
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75em;
+    letter-spacing: 1px;
+    height: 38px;
+    width: 120px;
+    line-height: 38px;
+    background: var(--base-color);
+    border-radius: 3px;
+    border: 0;
+    cursor: pointer;
+    @extend %base-shadow;
+    @extend %transition;
+
+    &:hover,
+    &:focus {
+      @extend %hover-shadow;
+    }
+
+    &:disabled {
+      background: #5f5f5f;
+      box-shadow: none;
+    }
+  }
+}
+
+@media (max-width: 710px) {
+  .form {
+    margin: 30px auto;
+  }
+  .form_item[type='text'] {
+    order: -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .form {
+    padding: 30px 20px;
+  }
+}

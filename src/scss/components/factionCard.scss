@@ -1,0 +1,59 @@
+.faction {
+  width: 20%;
+  height: fit-content;
+  min-width: 300px;
+  margin: 15px;
+  padding: 20px;
+  cursor: pointer;
+  @extend %transition;
+  @extend %base-shadow;
+
+  &:hover {
+    @extend %hover-shadow;
+  }
+  &_name {
+    text-align: center;
+  }
+  &__description {
+    height: 200px;
+    overflow-y: overlay;
+  }
+
+  &__detail {
+    overflow: hidden;
+    height: 0;
+    z-index: 3;
+  }
+  &__detail-enter {
+    opacity: 0;
+    height: 0;
+  }
+  &__detail-enter-done {
+    opacity: 1;
+
+    height: 350px;
+    transition: opacity 300ms, height 300ms;
+  }
+  &__detail-exit {
+    opacity: 1;
+    height: 350px;
+  }
+  &__detail-exit-active {
+    opacity: 0;
+    height: 0;
+    transition: opacity 300ms, height 300ms;
+  }
+}
+
+@media (max-width: 1100px) {
+  .faction {
+    width: 40%;
+  }
+}
+
+@media (max-width: 740px) {
+  .faction {
+    width: 90%;
+    min-width: 240px;
+  }
+}
