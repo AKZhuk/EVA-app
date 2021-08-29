@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { ISearchResult } from './components/Search/SearchDashboard';
-import { categories } from './components/Search/SearchForm';
+import { searchCategories } from './components/Search/SearchForm';
 
 export interface IAction {
   type: string;
@@ -89,11 +89,32 @@ export interface ISearchFormProps {
 
 interface ISearchParam {
   searchString: string;
-  category: keyof typeof categories;
+  category: keyof typeof searchCategories;
 }
 
 export interface IFieldProps {
   title: string;
   value: string | number | undefined;
-  clickHandler?: (e: any) => void;
+  clickHandler?: (e: MouseEvent) => void;
+}
+
+interface IActionCombineItem {
+  URL: string;
+  action: <T>(data: T) => IAction;
+  middleWare?: <T>(data: T) => T;
+}
+export interface IActionCombine {
+  'solar-system': IActionCombineItem;
+  factions: IActionCombineItem;
+  race: IActionCombineItem;
+  corporation: {
+    URL: string;
+    middleWare: (data: ICorporation, idx: number) => ICorporation;
+    action: (data: ICorporation) => IAction;
+  };
+  CEO: {
+    URL: string;
+    middleWare: (data: ICeo) => ICeo;
+    action: (data: ICeo) => IAction;
+  };
 }

@@ -6,7 +6,6 @@ import Field from '../Field';
 class PopUpCEOView extends Component<props, { raceName: string }> {
   constructor(props: props) {
     super(props);
-    console.log(this.props.CEO);
     let race = this.props.races.find((race) => race.race_id === this.props.CEO?.race_id) as IRace;
     this.state = { raceName: race?.name };
   }

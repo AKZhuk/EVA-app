@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { searchData, setSearchParam } from '../../redux/actions';
 import { IState } from '../../types';
 
-export const categories = {
+export const searchCategories = {
   agent: (id: number) => `/characters/${id}`,
   character: (id: number) => `/characters/${id}`,
   alliance: (id: number) => `/alliances/${id}`,
@@ -12,6 +12,8 @@ export const categories = {
   region: (id: number) => `/universe/regions/${id}/`,
   solar_system: (id: number) => `/universe/systems/${id}/`,
   station: (id: number) => `/universe/stations/${id}/`,
+  faction: () => `/universe/factions/`,
+  inventory_type: () => `/universe/names/`,
 };
 
 const SearchForm = (): JSX.Element => {
@@ -29,7 +31,7 @@ const SearchForm = (): JSX.Element => {
 
   const handleInput = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     validate(e.target.value);
-    dispatch(setSearchParam({ [e.target.name]: e.target.value }));
+    dispatch(setSearchParam({ [e.target.name as keyof typeof searchCategories]: e.target.value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -41,13 +43,11 @@ const SearchForm = (): JSX.Element => {
     <form className="form" onSubmit={handleSubmit}>
       <div className="form__group">
         <select name="category" className="form_item" value={search.param.category} onChange={handleInput}>
-          {Object.keys(categories).map((category) => (
+          {Object.keys(searchCategories).map((category) => (
             <option key={category} value={category}>
               {category}
             </option>
           ))}
-          <option value="inventory_type">inventory_type</option>
-          <option value="faction">faction</option>
         </select>
         <input
           type="text"

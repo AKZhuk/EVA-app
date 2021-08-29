@@ -1,7 +1,7 @@
 import { Dispatch } from 'react';
 import { ISearchResult } from '../components/Search/SearchDashboard';
-import { categories } from '../components/Search/SearchForm';
-import { IAction, ICeo, ICorporation, IFaction, IRace } from '../types';
+import { searchCategories } from '../components/Search/SearchForm';
+import { IAction, IActionCombine, IFaction } from '../types';
 
 export const BASE_URL = 'https://esi.evetech.net/legacy';
 export const RECEIVE_FRACTIONS = 'RECIVE_FRACTIONS';
@@ -19,44 +19,37 @@ export const switchPopUp = (flag: boolean, corporation_id: number | undefined = 
   payload: { isOpen: flag, id: corporation_id, view: view },
 });
 
-export const receiveFactions = (data: IFaction[]): IAction => ({ type: RECEIVE_FRACTIONS, payload: data });
-
-export const receiveSolarSystem = (data: IFaction): IAction => ({ type: RECEIVE_SOLAR_SYSTEM, payload: data });
-
-export const receiveCorporation = (data: any): IAction => ({ type: RECEIVE_CORPORATION, payload: data });
-
 export const setSearchParam = (data: {}): IAction => ({ type: SET_SEARCH_PARAM, payload: data });
 
 export const requestSearchResult = (): IAction => ({ type: REQUEST_SEARCH_RESULT, payload: [] });
 
 export const receiveSearchResult = (data: ISearchResult[]): IAction => ({ type: RECEIVE_SEARCH_RESULT, payload: data });
 
-export const actionCombine: any = {
+export const actionCombine: Readonly<IActionCombine> = {
   'solar-system': {
     URL: 'universe/systems',
-    action: (data: IFaction): IAction => ({ type: RECEIVE_SOLAR_SYSTEM, payload: data }),
+    action: (data) => ({ type: RECEIVE_SOLAR_SYSTEM, payload: data }),
   },
   factions: {
     URL: 'universe/factions',
-    action: (data: IFaction[]): IAction => ({ type: RECEIVE_FRACTIONS, payload: data }),
+    action: (data) => ({ type: RECEIVE_FRACTIONS, payload: data }),
   },
-
   corporation: {
     URL: 'corporations',
-    middleWare: <T, U>(data: T, idx: U): T => ({ ...data, id: idx }),
-    action: (data: ICorporation): IAction => ({ type: RECEIVE_CORPORATION, payload: data }),
+    middleWare: (data, idx) => ({ ...data, id: idx }),
+    action: (data) => ({ type: RECEIVE_CORPORATION, payload: data }),
   },
   CEO: {
     URL: 'characters',
-    middleWare: <T extends ICeo>(data: T): T => {
+    middleWare: (data) => {
       data.birthday = new Date(data.birthday).toLocaleDateString('en-US');
       return data;
     },
-    action: (data: ICeo): IAction => ({ type: RECEIVE_CEO, payload: data }),
+    action: (data) => ({ type: RECEIVE_CEO, payload: data }),
   },
   race: {
     URL: 'universe/races',
-    action: (data: IRace): IAction => ({ type: RECEIVE_RACE, payload: data }),
+    action: (data) => ({ type: RECEIVE_RACE, payload: data }),
   },
 };
 
@@ -67,7 +60,7 @@ export const loadData = (type: keyof typeof actionCombine, id?: number) => {
       const response = await fetch(`${BASE_URL}/${URL}/${id ? id : ''}?language=en`);
       let data = await response.json();
       if (middleWare) {
-        data = middleWare(data, id);
+        data = middleWare(data, id as number);
       }
       return dispatch(action(data));
     } catch (error) {
@@ -76,24 +69,24 @@ export const loadData = (type: keyof typeof actionCombine, id?: number) => {
   };
 };
 
-const searchInventoryType = async (arrayOfId: any[]): Promise<ISearchResult[]> => {
+const searchInventoryType = async (arrayOfId: number[]): Promise<ISearchResult[]> => {
   let response = await (
-    await fetch(`${BASE_URL}/universe/names/`, {
+    await fetch(`${BASE_URL + searchCategories.inventory_type()}`, {
       method: 'POST',
       body: JSON.stringify(arrayOfId),
     })
   ).json();
-  return response.map((elem: { id: number; name: string }): ISearchResult => ({ id: elem.id, name: elem.name }));
+  return response.map(<T extends ISearchResult>(elem: T): ISearchResult => ({ id: elem.id, name: elem.name }));
 };
 
-const searchFactions = async (arrayOfId: any[]): Promise<ISearchResult[]> => {
-  let factions: IFaction[] = await (await fetch(`${BASE_URL}/universe/factions/?language=en`)).json();
+const searchFactions = async (arrayOfId: number[]): Promise<ISearchResult[]> => {
+  let factions: IFaction[] = await (await fetch(`${BASE_URL + searchCategories.faction()}?language=en`)).json();
   return factions
     .filter((faction) => arrayOfId.includes(faction.faction_id))
     .map((elem: IFaction): ISearchResult => ({ name: elem.name, id: elem.faction_id }));
 };
 
-export const searchData = (category: string, searchString: string) => {
+export const searchData = (category: keyof typeof searchCategories, searchString: string) => {
   return async function (dispatch: Dispatch<IAction>) {
     let searchResult: ISearchResult[] = [];
     dispatch(requestSearchResult());
@@ -101,7 +94,7 @@ export const searchData = (category: string, searchString: string) => {
       let response = await (
         await fetch(`${BASE_URL}/search?categories=${category}&search=${searchString}&language=en`)
       ).json();
-      let foundIDs: Array<number> = response[category];
+      let foundIDs: number[] = response[category];
 
       if (foundIDs === undefined) {
         dispatch(receiveSearchResult([]));
@@ -114,12 +107,11 @@ export const searchData = (category: string, searchString: string) => {
         searchResult = await searchInventoryType(foundIDs);
       } else {
         const promises = foundIDs.map((val: number) => {
-          const reqUrl = BASE_URL + categories[category as keyof typeof categories](val);
+          const reqUrl = BASE_URL + searchCategories[category](val);
           return fetch(reqUrl);
         });
         const responses = await Promise.all(promises);
         const arrayOfName = await Promise.all(responses.map((r) => r.json()));
-        console.log(category);
         if (category === 'station') {
           searchResult = foundIDs.map((elem: number, idx: number) => {
             return { id: elem, name: arrayOfName[idx].station_name };
