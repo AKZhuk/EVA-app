@@ -95,7 +95,7 @@ interface ISearchParam {
 export interface IFieldProps {
   title: string;
   value: string | number | undefined;
-  clickHandler?: (e: MouseEvent) => void;
+  clickHandler?: (e: any) => void;
 }
 
 interface IActionCombineItem {

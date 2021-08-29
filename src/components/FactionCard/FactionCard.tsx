@@ -24,7 +24,7 @@ const FactionCard = ({ data }: IFactionCardProps) => {
     setIsActive(!isActive);
   };
 
-  const handleOpenPopUp = (e: MouseEvent<HTMLElement>) => {
+  const handleOpenPopUp = (e: MouseEvent<HTMLSpanElement>) => {
     document.body.classList.add('not-scrollable');
     e.stopPropagation();
     dispatch(switchPopUp(true, data.corporation_id, 'Corporation'));
